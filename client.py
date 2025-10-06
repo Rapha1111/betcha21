@@ -1,7 +1,7 @@
 import socket, os
 
-HOST = "127.0.0.1"  # adresse du serveur
-PORT = 5000         # port du serveur
+HOST = input("ip : ")  # adresse du serveur
+PORT = int(input("port : "))         # port du serveur
 
 # connexion
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -24,8 +24,8 @@ try:
         message = data.decode("utf-8").strip()
         
         # si le message commence par ask:, on demande une réponse à l'utilisateur
-        if message.startswith("ask:"):
-            question = message[4:]
+        if "ask:" in message:
+            question = message.replace("ask:","")
             answer = input(question)
             client.send(answer.encode("utf-8"))
             clear()

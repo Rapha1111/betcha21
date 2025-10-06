@@ -111,21 +111,21 @@ def game():
                 gagnants.append(str(i+1))
         if len(gagnants)==1:
             broadcast_msg(f"Le gagnant est : {gagnants[0]}")
-            gamers[int(gagnants[0]-1)][0]+=pot
+            gamers[int(gagnants[0])-1][0]+=pot
             pot=0
         elif len(gagnants)==0:
             broadcast_msg(f"Pas de gagnants a cette partie, le pot est gardé")
         else:
             broadcast_msg(f"Les gagnants sont : {", ".join(gagnants)}")
             for i in gagnants:
-                gamers[int(i-1)][0]+=pot//len(gagnants)
+                gamers[int(i)-1][0]+=pot//len(gagnants)
             pot%=len(gagnants)
         time.sleep(3)
         clear()
 
 def handle_client(client_socket, id):
     client_socket.send("En attente de la fin de la partie...".encode())
-    waiters.append([100, client_socket, True, id])
+    waiters.append([10000, client_socket, True, id])
     running=True
     while running:
         try:
@@ -154,7 +154,7 @@ def ask(msg, to):
 
 def start_server(port):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind(('0.0.0.0', port))
+    server.bind(('127.0.0.1', port))
     server.listen()
     print(f"Serveur en écoute sur le port {port}...")
     prompt_cmd = threading.Thread(target=game)
