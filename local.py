@@ -14,12 +14,17 @@ def pick_card():
     c=cards[0]
     del cards[0]
     return c
-
+argent=[]
+for i in range(PLAYERS):
+    argent.append(100)
+pot=0
 while 1:
+    for i in range(PLAYERS):
+        argent[i]-=1
     cards=betcha21.cards()
     joueurs=[]
     mise=0
-    pot=PLAYERS
+    pot+=PLAYERS
     for i in range(PLAYERS):
         joueurs.append([pick_card()])
     for i in range(PLAYERS):
@@ -34,6 +39,7 @@ while 1:
             print(f'===========JOUEUR {auj}===========')
             print(f"Cartes : {", ".join(joueurs[auj])} -> Score : {betcha21.score(joueurs[auj])}")
             print(f"Mise : {mise}, Pot : {pot}")
+            print(f"Argent : {argent[auj]}")
             if tour>0: #on tire pas au premier tour
                 print("\nActions :\n1. Hit\n2. Stand")
                 act=input("-> ")
@@ -42,15 +48,18 @@ while 1:
                     print(f"\nPioché : {joueurs[auj][-1]}\n")
                     print(f"Cartes : {", ".join(joueurs[auj])} : {betcha21.score(joueurs[auj])}")
                     print(f"Mise : {mise}, Pot : {pot}")
+                    print(f"Argent : {argent[i]}")
                 else:
                     stand+=1
             print(f"\nActions :\n1. Suivre la mise ({mise})\n2. Augmenter la mise\n3. Se coucher")
             act=input("-> ")
             if act=="1":
                 pot+=mise
+                argent[auj]-=mise
             elif act=="2":
                 mise=int(input("Nouvelle mise : "))
                 pot+=mise
+                argent[auj]-=mise
             else:
                 joueurs[auj]=[]
             clear()
@@ -67,7 +76,7 @@ while 1:
         if jg!=-1:
             break
     gagnants=[]
-    score=0
+    score=1
     for i in range(PLAYERS):
         s=betcha21.score(joueurs[i])
         if s>21:
@@ -79,10 +88,15 @@ while 1:
             gagnants.append(str(i))
     if len(gagnants)==1:
         print(f"Le gagnant est : {gagnants[0]}")
+        argent[int(gagnants[0])]+=pot
+        pot=0
     elif len(gagnants)==0:
         print(f"Pas de gagnants a cette partie, le pot est gardé")
     else:
         print(f"Les gagnants sont : {", ".join(gagnants)}")
+        for i in gagnants:
+            argent[int(i)]+=pot//len(gagnants)
+        pot%=len(gagnants)
     input("<enter> pour la prochaine partie")
     clear()
         
