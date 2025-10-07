@@ -133,13 +133,13 @@ def update_screen(player_nbr, my_cards, my_score, my_money, cards, player_turn, 
 # connexion
 HOST = input_box("ip : ", y=200,numeric=False)
 if HOST=="":
-    HOST="2.tcp.ngrok.io"
+    HOST="6.tcp.ngrok.io"
     PORT = int(input_box("port : ", y=200))
 elif HOST=="l":
     HOST="localhost"
     PORT=5000
 else:
-    PORT = int(input("port : ", y=500))
+    PORT = int(input_box("port : ", y=500))
 
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
