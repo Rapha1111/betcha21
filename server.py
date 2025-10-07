@@ -74,13 +74,31 @@ def game():
                 time.sleep(0.1)
                 act=ask(gamers[auj][1])
                 if act=="call":
-                    pot+=mise
-                    gamers[auj][0]-=mise
+                    if mise>gamers[auj][0]:
+                        pot+=gamers[auj][0]
+                        gamers[auj][0]=0
+                    else:
+                        pot+=mise
+                        gamers[auj][0]-=mise
+                    
                 elif act[0:4]=="more":
-                    mise=int(act[4:])
-                    pot+=mise
-                    gamers[auj][0]-=mise
-                    broadcast_msg({"msg":"more", "player":auj})
+                    nmise=int(act[4:])
+                    if nmise<mise:
+                        if nmise>gamers[auj][0]:
+                            pot+=gamers[auj][0]
+                            gamers[auj][0]=0
+                        else:
+                            pot+=mise
+                            gamers[auj][0]-=mise
+                    else:
+                        if nmise>gamers[auj][0]:
+                            pot+=gamers[auj][0]
+                            gamers[auj][0]=0
+                        else:    
+                            pot+=nmise
+                            mise=nmise
+                            gamers[auj][0]-=mise
+                            broadcast_msg({"msg":"more", "player":auj})
                 else:
                     joueurs[auj]=[]
                     broadcast_msg({"msg":"fold","player":auj})
@@ -118,8 +136,8 @@ def game():
             for i in gagnants:
                 gamers[int(i)][0]+=pot//len(gagnants)
             pot%=len(gagnants)
-        broadcast_msg({"msg":"winner","players":gagnants})
-        time.sleep(3)
+        broadcast_msg({"msg":"winner","players":gagnants, "cards":joueurs})
+        time.sleep(5)
 
 def handle_client(client_socket, id):
     send_msg({"msg":"waitfor"},client_socket)

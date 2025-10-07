@@ -18,6 +18,23 @@ pygame.display.set_caption("Betcha21")
 pygame.display.set_icon(textures["dos"])
 print("Textures Loaded !")
 
+def score(a):
+  _as=0
+  s=0
+  for i in a:
+    try:
+      n=int(i)
+      s+=n
+    except:
+      if i=="A":
+        s+=1
+        _as+=1
+      else:
+        s+=10
+  while s<12 and _as>0:
+    s+=10
+    _as-=1
+  return s
 
 
 def input_box(prompt=">", x=400, y=300, numeric=True):
@@ -65,7 +82,7 @@ def keydown(k):
   return False
 def update_screen(player_nbr, my_cards, my_score, my_money, cards, player_turn, last_act, last_raiser, pot, mise, max_player, tour, act):
     screen.fill((0,150,0))
-    draw_string("Tour : "+str(tour), 10, 438)
+    draw_string("Tour : "+str(tour)+"/4", 10, 438)
     draw_string("Argent : "+str(my_money), 10, 478)
     draw_string("Mise : "+str(mise), 10, 518)
     draw_img("dos", 400, 250, 60, 100)
@@ -97,8 +114,13 @@ def update_screen(player_nbr, my_cards, my_score, my_money, cards, player_turn, 
                 draw_img(my_cards[l], sx-75+l*90/len(my_cards), sy, 60, 100)
             draw_string("Score : "+str(my_score), sx-70, sy+105)
         else:
-            for l in range(cards[i]):
-                draw_img("dos", sx-75+l*90/cards[i], sy, 60, 100)
+            if type(cards[0])==type([]):
+                for l in range(len(cards[i])):
+                    draw_img(cards[i][l], sx-75+l*90/len(cards[i]), sy, 60, 100)
+                draw_string("Score : "+str(score(cards[i])), sx-70, sy+105)
+            else:
+                for l in range(cards[i]):
+                    draw_img("dos", sx-75+l*90/cards[i], sy, 60, 100)
     if act=="hit/stand":
         draw_string("Action : (H)it/(S)tand", 350, 370, "white")
     elif act=="call/fold":
@@ -169,7 +191,8 @@ while running:
             elif msg["msg"]=="action":
                 act=msg["ask"]
             elif msg["msg"]=="winner":
-                act="Winner : "+", ".join(msg["players"])
+                act="Winner : "+", ".join([str(int(i)+1) for i in msg["players"]])
+                cards=msg["cards"]
             elif msg["msg"]=="waitfor":
                 act="Waiting for the next game..."
             elif msg["msg"]=="new_turn":
