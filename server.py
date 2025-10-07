@@ -41,7 +41,6 @@ def game():
         gamers=g.copy()
         for i in range(len(gamers)):
             gamers[i][0]-=1
-            send_msg({"msg":"place","nbr":i, "max":len(gamers)},gamers[i][1])
         cards=betcha21.cards()
         joueurs=[]
         mise=0
@@ -50,8 +49,9 @@ def game():
             joueurs.append([pick_card()])
         for i in range(len(gamers)):
             joueurs[i].append(pick_card())
+            send_msg({"msg":"place","nbr":i, "max":len(gamers), "cards":joueurs[i], "score":betcha21.score(joueurs[i]), "argent":gamers[i][0]},gamers[i][1])
         for tour in range(5):
-            broadcast_msg({"msg":"new_turn"})
+            broadcast_msg({"msg":"new_turn", "turn":tour})
             stand=0
             for auj in range(len(gamers)):
                 if joueurs[auj]==[] or not gamers[auj][2]:
@@ -74,7 +74,6 @@ def game():
                 time.sleep(0.1)
                 act=ask(gamers[auj][1])
                 if act=="call":
-                    broadcast_msg({"msg":"call", "player":auj})
                     pot+=mise
                     gamers[auj][0]-=mise
                 elif act[0:4]=="more":
@@ -85,7 +84,7 @@ def game():
                 else:
                     joueurs[auj]=[]
                     broadcast_msg({"msg":"fold","player":auj})
-                broadcast_msg({"msg":"update_details","player":auj,"mise":mise, "pot":pot, "player_money" : gamers[auj][0], "nbr_card":len(joueurs[auj])})
+                broadcast_msg({"msg":"update_details","player":auj,"mise":mise, "pot":pot, "nbr_card":len(joueurs[auj])})
                 
             if stand==len(gamers):
                 break
@@ -111,7 +110,6 @@ def game():
             elif score==s:
                 gagnants.append(str(i))
         if len(gagnants)==1:
-            
             gamers[int(gagnants[0])][0]+=pot
             pot=0
         elif len(gagnants)==0:
