@@ -162,7 +162,7 @@ while running:
         message = json.loads("["+data.decode().replace("}{","},{")+"]")
         for msg in message:
             if msg["msg"]=="place":
-                player_nbr, my_cards, my_score, my_money, cards, player_turn, last_act, last_raiser, pot, mise, max_player, tour, act=msg["nbr"],msg["cards"],msg["score"],msg["argent"],[2,2,2,2],0,[0,0,0,0],-1,msg["max"],0,msg["max"],0,"#"
+                player_nbr, my_cards, my_score, my_money, cards, player_turn, last_act, last_raiser, pot, mise, max_player, tour, act=msg["nbr"],msg["cards"],msg["score"],msg["argent"],[2,2,2,2],0,[0,0,0,0],-1,msg["pot"],10,msg["max"],0,"#"
                 print("\n\nNouelle manche")
             elif msg["msg"]=="player_turn":
                 player_turn=msg["player"]
@@ -197,6 +197,8 @@ while running:
                 act="Waiting for the next game..."
             elif msg["msg"]=="new_turn":
                 tour=msg["turn"]
+            elif msg["msg"]=="setmoney":
+                my_money=msg["money"]
             
     except BlockingIOError:
         pass  # aucun message dispo, on continue
