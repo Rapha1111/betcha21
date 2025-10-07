@@ -7,7 +7,7 @@ def clear():
         os.system("clear")
 clear()
 pygame.init()
-screen = pygame.display.set_mode((1000,558))
+screen = pygame.display.set_mode((1000,558), pygame.FULLSCREEN | pygame.SCALED)
 
 clock = pygame.time.Clock()
 clear()
@@ -103,16 +103,16 @@ def update_screen(player_nbr, my_cards, my_score, my_money, cards, player_turn, 
         draw_string("Action : (H)it/(S)tand", 350, 370, "white")
     elif act=="call/fold":
         draw_string("Action : (C)all/(R)aise/(F)old", 300, 370, "white")
-    elif act.startswith("winner :"):
+    elif act[0]=="W":
         draw_string(act, 300, 370, "white")
     pygame.display.flip()
 
 
 # connexion
-HOST = input_box("ip : ", numeric=False)
+HOST = input_box("ip : ", y=200,numeric=False)
 if HOST=="":
     HOST="2.tcp.ngrok.io"
-    PORT = int(input_box("port : ", y=500))
+    PORT = int(input_box("port : ", y=200))
 elif HOST=="l":
     HOST="localhost"
     PORT=5000
@@ -124,7 +124,7 @@ client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((HOST, PORT))
 client.setblocking(False)
 print(f"[+] Connecté à {HOST}:{PORT}")
-player_nbr, my_cards, my_score, my_money, cards, player_turn, last_act, last_raiser, pot, mise, max_player,tour, act=0,[],0,10000,[2,2,2,2],0,[0,0,0,0],-1,0,0,4,0,"#"
+player_nbr, my_cards, my_score, my_money, cards, player_turn, last_act, last_raiser, pot, mise, max_player,tour, act=0,[],0,10000,[2,2,2,2],0,[0,0,0,0],-1,0,0,0,0,"#"
 
 running=True
 while running:
@@ -137,11 +137,10 @@ while running:
         if not data:
             print("[-] Déconnecté du serveur")
             break
-        print(data.decode())
         message = json.loads("["+data.decode().replace("}{","},{")+"]")
         for msg in message:
             if msg["msg"]=="place":
-                player_nbr, my_cards, my_score, my_money, cards, player_turn, last_act, last_raiser, pot, mise, max_player, tour=msg["nbr"],msg["cards"],msg["score"],msg["argent"],[2,2,2,2],0,[0,0,0,0],-1,msg["max"],0,msg["max"],0
+                player_nbr, my_cards, my_score, my_money, cards, player_turn, last_act, last_raiser, pot, mise, max_player, tour, act=msg["nbr"],msg["cards"],msg["score"],msg["argent"],[2,2,2,2],0,[0,0,0,0],-1,msg["max"],0,msg["max"],0,"#"
                 print("\n\nNouelle manche")
             elif msg["msg"]=="player_turn":
                 player_turn=msg["player"]
@@ -171,6 +170,8 @@ while running:
                 act=msg["ask"]
             elif msg["msg"]=="winner":
                 act="Winner : "+", ".join(msg["players"])
+            elif msg["msg"]=="waitfor":
+                act="Waiting for the next game..."
             elif msg["msg"]=="new_turn":
                 tour=msg["turn"]
             
