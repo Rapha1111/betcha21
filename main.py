@@ -116,6 +116,7 @@ def update_screen(player_nbr, my_cards, my_score, my_money, cards, player_turn, 
                 draw_img(my_cards[l], sx-75+l*90/len(my_cards), sy, 60, 100)
             draw_string("Score : "+str(my_score), sx-70, sy+105)
         else:
+            draw_string(pseudos[i], sx-50,sy-45)
             if type(cards[0])==type([]):
                 for l in range(len(cards[i])):
                     draw_img(cards[i][l], sx-75+l*90/len(cards[i]), sy, 60, 100)
@@ -164,8 +165,9 @@ while running:
         message = json.loads("["+data.decode().replace("}{","},{")+"]")
         for msg in message:
             if msg["msg"]=="place":
-                player_nbr, my_cards, my_score, my_money, cards, player_turn, last_act, last_raiser, pot, mise, max_player, tour, act, pseudos=msg["nbr"],msg["cards"],msg["score"],msg["argent"],[2,2,2,2],0,[0,0,0,0],-1,msg["pot"],10,msg["max"],0,msg["names"]
+                player_nbr, my_cards, my_score, my_money, cards, player_turn, last_act, last_raiser, pot, mise, max_player, tour, act, pseudos=msg["nbr"],msg["cards"],msg["score"],msg["argent"],[2,2,2,2],0,[0,0,0,0],-1,msg["pot"],10,msg["max"],0,"#",msg["names"]
                 print("\n\nNouelle manche")
+                print('Participants : '+", ".join(pseudos))
             elif msg["msg"]=="player_turn":
                 player_turn=msg["player"]
                 print(f"====Tour de Player {msg["player"]}====")
