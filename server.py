@@ -90,6 +90,7 @@ def game():
                             mise=nmise
                             gamers[auj][0]-=mise
                             broadcast_msg({"msg":"more", "player":auj})
+                            stand-=1
                 if act=="call":
                     if mise>gamers[auj][0]:
                         gamers[auj][4]+=mise-gamers[auj][0]
@@ -104,7 +105,16 @@ def game():
                     broadcast_msg({"msg":"fold","player":auj})
                 send_msg({"msg":"setmoney", "money":gamers[auj][0]}, gamers[auj][1])
                 broadcast_msg({"msg":"update_details","player":auj,"mise":mise, "pot":pot, "nbr_card":len(joueurs[auj])})
-                
+                jg=-1
+                for i in range(len(gamers)):
+                    if joueurs[i]!=[]:
+                        if jg==-1:
+                            jg=i
+                        else:
+                            jg=-1
+                            break
+                if jg!=-1:
+                    break
             if stand==len(gamers):
                 break
             jg=-1
