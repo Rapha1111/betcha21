@@ -7,7 +7,7 @@ def clear():
         os.system("clear")
 clear()
 pygame.init()
-screen = pygame.display.set_mode((1000,558), pygame.FULLSCREEN | pygame.SCALED)
+screen = pygame.display.set_mode((1920,1080), pygame.FULLSCREEN)
 
 clock = pygame.time.Clock()
 clear()
@@ -71,10 +71,10 @@ def input_box(prompt=">", x=400, y=300, numeric=True):
 font = pygame.font.Font(None, 50)
 def draw_string(t,x,y,c="black"):
     text_surface = font.render(t, True, c)
-    screen.blit(text_surface, (x, y))
+    screen.blit(text_surface, (x*1.5, y*1.5))
 def draw_img(img, x, y, w, h):
-    image = pygame.transform.scale(textures[img], (w, h))
-    screen.blit(image, (x, y))    
+    image = pygame.transform.scale(textures[img], (w*1.5, h*1.5))
+    screen.blit(image, (x*1.5, y*1.5))    
 def keydown(k):
   keys = pygame.key.get_pressed()
   if keys[k]:
