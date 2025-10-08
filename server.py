@@ -1,4 +1,4 @@
-import socket, threading, json, cmd,time
+import socket, threading, json, time
 from random import randint
 import betcha21, os
 
@@ -48,11 +48,13 @@ def game():
         cards=betcha21.cards()
         joueurs=[]
         mise=10
+        noms=[]
         for i in range(len(gamers)):
             joueurs.append([pick_card()])
+            noms.append(gamers[i][5])
         for i in range(len(gamers)):
             joueurs[i].append(pick_card())
-            send_msg({"msg":"place","nbr":i, "max":len(gamers), "cards":joueurs[i], "score":betcha21.score(joueurs[i]), "argent":gamers[i][0], "pot":pot},gamers[i][1])
+            send_msg({"msg":"place","nbr":i, "max":len(gamers), "cards":joueurs[i], "score":betcha21.score(joueurs[i]), "argent":gamers[i][0], "pot":pot, "names":noms},gamers[i][1])
         for tour in range(5):
             broadcast_msg({"msg":"new_turn", "turn":tour})
             stand=0
@@ -76,33 +78,28 @@ def game():
                 send_msg({"msg":"action", "ask":"call/fold"}, gamers[auj][1])
                 time.sleep(0.1)
                 act=ask(gamers[auj][1])
+                if act[0:4]=="more":
+                    nmise=int(act[4:])
+                    if nmise<mise:
+                        act="call"
+                    else:
+                        if nmise>gamers[auj][0]:
+                            act="call"
+                        else:    
+                            pot+=nmise
+                            mise=nmise
+                            gamers[auj][0]-=mise
+                            broadcast_msg({"msg":"more", "player":auj})
                 if act=="call":
                     if mise>gamers[auj][0]:
+                        gamers[auj][4]+=mise-gamers[auj][0]
                         pot+=gamers[auj][0]
                         gamers[auj][0]=0
                     else:
                         pot+=mise
                         gamers[auj][0]-=mise
                     
-                elif act[0:4]=="more":
-                    nmise=int(act[4:])
-                    if nmise<mise:
-                        if nmise>gamers[auj][0]:
-                            pot+=gamers[auj][0]
-                            gamers[auj][0]=0
-                        else:
-                            pot+=mise
-                            gamers[auj][0]-=mise
-                    else:
-                        if nmise>gamers[auj][0]:
-                            pot+=gamers[auj][0]
-                            gamers[auj][0]=0
-                        else:    
-                            pot+=nmise
-                            mise=nmise
-                            gamers[auj][0]-=mise
-                            broadcast_msg({"msg":"more", "player":auj})
-                else:
+                elif act[0:4]!="more":
                     joueurs[auj]=[]
                     broadcast_msg({"msg":"fold","player":auj})
                 send_msg({"msg":"setmoney", "money":gamers[auj][0]}, gamers[auj][1])
@@ -121,31 +118,65 @@ def game():
             if jg!=-1:
                 break
         gagnants=[]
+        gp=[]
+        dnr=False
         score=1
         for i in range(len(gamers)):
             s=betcha21.score(joueurs[i])
             if s>21:
                 continue
+            else:
+                gp.append(str(i))
             if s>score:
                 gagnants=[str(i)]
                 score=s
             elif score==s:
                 gagnants.append(str(i))
+        if len(gagnants)==0:
+            if len(gp)==1:
+                gagnants=gp.copy()
+                dnr=True
+        
         if len(gagnants)==1:
-            gamers[int(gagnants[0])][0]+=pot
-            pot=0
+            if gamers[int(gagnants[0])][4]*2>pot:
+                gamers[int(gagnants[0])][4]-=pot
+            else:
+                recup=pot-gamers[int(gagnants[0])][4]*2
+                pot-=recup
+                gamers[int(gagnants[0])][0]+=recup
+                gamers[int(gagnants[0])][4]=0
+                
+                
         elif len(gagnants)==0:
             pass
         else:
-            for i in gagnants:
-                gamers[int(i)][0]+=pot//len(gagnants)
+            gain=pot//len(gagnants)
             pot%=len(gagnants)
-        broadcast_msg({"msg":"winner","players":gagnants, "cards":joueurs})
+            for i in gagnants:
+                if gamers[int(i)][4]*2>gain:
+                    gamers[int(i)][4]-=gain
+                else:
+                    recup=gamers[int(i)][4]*2
+                    pot+=recup
+                    gamers[int(gagnants[0])][0]+=gain-recup
+                    gamers[int(gagnants[0])][4]=0
+                #gamers[int(i)][0]+=pot//len(gagnants)
+        if dnr:
+            c=[]
+            for i in range(len(joueurs)):
+                if i in gagnants:
+                    c.append(len(joueurs[auj]))
+                else:
+                    c.append(0)
+            broadcast_msg({"msg":"winner","players":gagnants, "cards":c})
+        else:
+            broadcast_msg({"msg":"winner","players":gagnants, "cards":joueurs})
         time.sleep(5)
 
 def handle_client(client_socket, id):
+    pseudo=client_socket.recv(1024).decode()
     send_msg({"msg":"waitfor"},client_socket)
-    waiters.append([10000, client_socket, True, id])
+    waiters.append([10000, client_socket, True, id, 0, pseudo])
     running=True
     while running:
         try:

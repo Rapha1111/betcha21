@@ -7,7 +7,9 @@ def clear():
         os.system("clear")
 clear()
 pygame.init()
-screen = pygame.display.set_mode((1920,1080), pygame.FULLSCREEN)
+
+screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+width, height = screen.get_size()
 
 clock = pygame.time.Clock()
 clear()
@@ -39,7 +41,7 @@ def score(a):
 
 def input_box(prompt=">", x=400, y=300, numeric=True):
     font = pygame.font.Font(None, 50)
-    box = pygame.Rect(x, y, 300, 50)
+    box = pygame.Rect(x*1.5, y*1.5, 300, 50)
     color_inactive = pygame.Color('gray')
     color_active = pygame.Color('white')
     color = color_active
@@ -61,7 +63,7 @@ def input_box(prompt=">", x=400, y=300, numeric=True):
         draw_string(prompt, x-250, y+10, "white")
         pygame.draw.rect(screen, color, box, 2)
         txt = font.render(text, True, color)
-        screen.blit(txt, (box.x+10, box.y+5))
+        screen.blit(txt, ((box.x+10), (box.y+5)))
         pygame.display.flip()
 
 
@@ -71,16 +73,16 @@ def input_box(prompt=">", x=400, y=300, numeric=True):
 font = pygame.font.Font(None, 50)
 def draw_string(t,x,y,c="black"):
     text_surface = font.render(t, True, c)
-    screen.blit(text_surface, (x*1.5, y*1.5))
+    screen.blit(text_surface, (x*width/1000, y*height/558))
 def draw_img(img, x, y, w, h):
-    image = pygame.transform.scale(textures[img], (w*1.5, h*1.5))
-    screen.blit(image, (x*1.5, y*1.5))    
+    image = pygame.transform.scale(textures[img], (w*width/1000, h*height/558))
+    screen.blit(image, (x*width/1000, y*height/558))    
 def keydown(k):
   keys = pygame.key.get_pressed()
   if keys[k]:
     return True
   return False
-def update_screen(player_nbr, my_cards, my_score, my_money, cards, player_turn, last_act, last_raiser, pot, mise, max_player, tour, act):
+def update_screen(player_nbr, my_cards, my_score, my_money, cards, player_turn, last_act, last_raiser, pot, mise, max_player, tour, act, pseudos):
     screen.fill((0,150,0))
     draw_string("Tour : "+str(tour)+"/4", 10, 438)
     draw_string("Argent : "+str(my_money), 10, 478)
@@ -132,22 +134,22 @@ def update_screen(player_nbr, my_cards, my_score, my_money, cards, player_turn, 
 
 # connexion
 HOST = input_box("ip : ", y=200,numeric=False)
-if HOST=="":
-    HOST="6.tcp.ngrok.io"
+if HOST[0:2]=="n:":
+    HOST=HOST[2]+".tcp.ngrok.io"
     PORT = int(input_box("port : ", y=200))
-elif HOST=="l":
+elif HOST=="":
     HOST="localhost"
     PORT=5000
 else:
     PORT = int(input_box("port : ", y=500))
-
+pseudo=input_box("pseudo", numeric=False)
 
 client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
 client.connect((HOST, PORT))
 client.setblocking(False)
 print(f"[+] Connecté à {HOST}:{PORT}")
-player_nbr, my_cards, my_score, my_money, cards, player_turn, last_act, last_raiser, pot, mise, max_player,tour, act=0,[],0,10000,[2,2,2,2],0,[0,0,0,0],-1,0,0,0,0,"#"
-
+player_nbr, my_cards, my_score, my_money, cards, player_turn, last_act, last_raiser, pot, mise, max_player,tour, act, pseudos=0,[],0,10000,[2,2,2,2],0,[0,0,0,0],-1,0,0,0,0,"#",[]
+client.send(pseudo.encode())
 running=True
 while running:
     for event in pygame.event.get():
@@ -162,7 +164,7 @@ while running:
         message = json.loads("["+data.decode().replace("}{","},{")+"]")
         for msg in message:
             if msg["msg"]=="place":
-                player_nbr, my_cards, my_score, my_money, cards, player_turn, last_act, last_raiser, pot, mise, max_player, tour, act=msg["nbr"],msg["cards"],msg["score"],msg["argent"],[2,2,2,2],0,[0,0,0,0],-1,msg["pot"],10,msg["max"],0,"#"
+                player_nbr, my_cards, my_score, my_money, cards, player_turn, last_act, last_raiser, pot, mise, max_player, tour, act, pseudos=msg["nbr"],msg["cards"],msg["score"],msg["argent"],[2,2,2,2],0,[0,0,0,0],-1,msg["pot"],10,msg["max"],0,msg["names"]
                 print("\n\nNouelle manche")
             elif msg["msg"]=="player_turn":
                 player_turn=msg["player"]
@@ -221,6 +223,6 @@ while running:
             client.send("fold".encode())
             act="#"
         
-    update_screen(player_nbr, my_cards, my_score, my_money, cards, player_turn, last_act, last_raiser, pot, mise, max_player, tour, act)
+    update_screen(player_nbr, my_cards, my_score, my_money, cards, player_turn, last_act, last_raiser, pot, mise, max_player, tour, act, pseudos)
     clock.tick(60)
 client.close()
