@@ -212,9 +212,9 @@ def ask(to):
     return n.decode()
         
 
-def start_server(port):
+def start_server(ip, port):
     server = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    server.bind(('127.0.0.1', port))
+    server.bind((ip, port))
     server.listen()
     print(f"Serveur en écoute sur le port {port}...")
     prompt_cmd = threading.Thread(target=game)
@@ -228,9 +228,17 @@ def start_server(port):
         client_handler.start()
 
 if __name__ == "__main__":
-    """port=input("Sur quel port lancer le serveur (12345 par défaut) : ")
-    if port=="":
-        port=12345
+    print("Quel mode de serveur voulez vous lancer ?\n1. Serveur Local\n2. Serveur sur le réseau local\n3. Serveur sur internet (ngrok)")
+    rep=input("-> ")
+    if rep=="3":
+        port=5000
+        ip="localhost"
+        os.system("start ngrok tcp 5000")
+    elif rep=="2":
+        ip="0.0.0.0"
+        port=int(input("Quel port : "))
     else:
-        port=int(port)"""
-    start_server(5000)
+        ip="localhost"
+        port=int(input("Quel port : "))
+    clear()
+    start_server(ip, port)
